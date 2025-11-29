@@ -92,6 +92,8 @@ def display_weights_column(weights, layer_names,figure_path,figure_name,figure_f
 
     plt.subplots_adjust(wspace=0.1, hspace=0.1, top=1.0, bottom=0.0, left=0.0, right=1.0)
     subfigs = fig.subfigures(1, n_layers_with_weights)
+
+
     layer_index_with_weights = 0
     print("Number of layers: "+str(len(weights)))
     for layer_index in range(0, len(weights)):
@@ -173,7 +175,7 @@ print("Shape before one-hot encoding: ", y_train.shape)
 Y_train = to_categorical(y_train, n_classes)
 Y_test = to_categorical(y_test, n_classes)
 print("Shape after one-hot encoding: ", Y_train.shape)
-n_cnn1planes = 15
+n_cnn1planes = 25
 n_cnn1kernel = 3
 n_poolsize = 1
 
@@ -186,7 +188,7 @@ n_strides = 1
 n_dense = 100
 dropout = 0.3
 
-n_epochs=1
+n_epochs=5
 
 model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1kernel)+'_Epochs' + str(n_epochs)
 #figure_format='svg'
@@ -227,6 +229,7 @@ model.add(Dense(n_dense, activation='relu'))
 model.add(Dense(n_classes, activation='softmax'))
 
 # compiling the sequential model
+model_name += "_3layers_"
 
 model_name += '_Optimzer_' + 'SGD'
 
@@ -234,6 +237,12 @@ model_name += '_Optimzer_' + 'SGD'
 model_name += '_LearningRate_' + 'Constant'
 learning_rate = 0.001
 
+if not os.path.exists(model_name):
+    os.makedirs(model_name)
+    print(f"Created new directory: {model_name}")
+
+# Update figure_path to point to this new folder
+figure_path = model_name
 # OR use a learning rate scheduler that adapts the learning rate over the epochs of the training process
 # https://keras.io/2.15/api/optimizers/learning_rate_schedules/
 
