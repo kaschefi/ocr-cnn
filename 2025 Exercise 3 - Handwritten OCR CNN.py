@@ -175,7 +175,7 @@ print("Shape before one-hot encoding: ", y_train.shape)
 Y_train = to_categorical(y_train, n_classes)
 Y_test = to_categorical(y_test, n_classes)
 print("Shape after one-hot encoding: ", Y_train.shape)
-n_cnn1planes = 25
+n_cnn1planes = 15
 n_cnn1kernel = 3
 n_poolsize = 1
 
@@ -229,13 +229,12 @@ model.add(Dense(n_dense, activation='relu'))
 model.add(Dense(n_classes, activation='softmax'))
 
 # compiling the sequential model
-model_name += "_3layers_"
 
-model_name += '_Optimzer_' + 'SGD'
 
 # vary the constant learning rate
-model_name += '_LearningRate_' + 'Constant'
-learning_rate = 0.001
+learning_rate = 0.009
+
+model_name += '_Optimzer_SGD_LR_' + str(learning_rate)
 
 if not os.path.exists(model_name):
     os.makedirs(model_name)
@@ -243,6 +242,8 @@ if not os.path.exists(model_name):
 
 # Update figure_path to point to this new folder
 figure_path = model_name
+
+optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
 # OR use a learning rate scheduler that adapts the learning rate over the epochs of the training process
 # https://keras.io/2.15/api/optimizers/learning_rate_schedules/
 
@@ -250,8 +251,8 @@ figure_path = model_name
 #learning_rate = ExponentialDecay(initial_learning_rate=1e-2, decay_steps=n_epochs, decay_rate=0.9)
 
 #learning_rate=0.01
-momentum = 0.9
-optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
+#momentum = 0.9
+#optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
 
 #optimizer=Adam(learning_rate = learning_rate)
 
@@ -265,18 +266,17 @@ layer_names = [layer.name for layer in model.layers[:8]]
 
 weights = [layer.get_weights() for layer in model.layers[:4]]
 figure_name=model_name + '_initial_weights'
-display_weights_column(weights, layer_names, './', figure_name, figure_format, False )
+display_weights_column(weights, layer_names, figure_path, figure_name, figure_format, False )
 
 # training the model for n_epochs, use 10% of the training data as validation data
 history = model.fit(X_train, Y_train, validation_split = 0.1, batch_size=128, epochs=n_epochs )
 
 figure_name=model_name + '_loss'
-display_loss_function(history,'./',figure_name,figure_format)
-
+display_loss_function(history,figure_path,figure_name,figure_format)
 
 weights = [layer.get_weights() for layer in model.layers[:4]]
 figure_name=model_name + '_weights' 
-display_weights_column(weights, layer_names, './', figure_name, figure_format, False )
+display_weights_column(weights, layer_names, figure_path, figure_name, figure_format, False )
 
 X_test_images = X_test[:2]
 for i in range(X_test_images.shape[0]):
