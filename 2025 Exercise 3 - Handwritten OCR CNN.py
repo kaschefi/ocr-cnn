@@ -188,7 +188,7 @@ n_strides = 1
 n_dense = 100
 dropout = 0.3
 
-n_epochs=5
+n_epochs=15
 
 model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1kernel)+'_Epochs' + str(n_epochs)
 #figure_format='svg'
@@ -232,34 +232,35 @@ model.add(Dense(n_classes, activation='softmax'))
 
 
 # vary the constant learning rate
-learning_rate = 0.009
+#learning_rate = 0.009
 
-model_name += '_Optimzer_SGD_LR_' + str(learning_rate)
-
-if not os.path.exists(model_name):
-    os.makedirs(model_name)
-    print(f"Created new directory: {model_name}")
+#model_name += '_Optimzer_SGD_LR_' + str(learning_rate)
+model_name += '_Optimzer_SGD'
 
 # Update figure_path to point to this new folder
-figure_path = model_name
 
-optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
+
 # OR use a learning rate scheduler that adapts the learning rate over the epochs of the training process
 # https://keras.io/2.15/api/optimizers/learning_rate_schedules/
 
 #model_name += '_LearningRate_' + 'ExponentialDecay'
-#learning_rate = ExponentialDecay(initial_learning_rate=1e-2, decay_steps=n_epochs, decay_rate=0.9)
+initial_lr = 0.1
+model_name += '_Optimizer_SGD_ExpDecay_InitLR_' + str(initial_lr)
+learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
 
 #learning_rate=0.01
 #momentum = 0.9
 #optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
-
+optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
 #optimizer=Adam(learning_rate = learning_rate)
 
 # vary the constant learning rate
 #learning_rate = 0.01
 #optimizer=SGD(learning_rate=learning_rate)
-
+if not os.path.exists(model_name):
+    os.makedirs(model_name)
+    print(f"Created new directory: {model_name}")
+figure_path = model_name
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
 layer_names = [layer.name for layer in model.layers[:8]]
