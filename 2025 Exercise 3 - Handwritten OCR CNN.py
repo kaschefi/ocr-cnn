@@ -4,7 +4,9 @@ from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Conv2D, MaxPool2D, Flatten, BatchNormalization
 from keras.optimizers.schedules import ExponentialDecay
 from keras import callbacks
+from matplotlib.dates import drange
 from tensorflow.keras.optimizers import SGD, Adam
+from keras.optimizers.schedules import CosineDecay
 #from keras.utils import np_utils
 from keras.utils import to_categorical
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -186,11 +188,12 @@ n_poolsize = 1
 # Stride is a critical parameter for controlling the spatial resolution of the feature maps and influencing the receptive field of the network.
 n_strides = 1
 n_dense = 100
-dropout = 0.3
+dropout = 0.4
 
 n_epochs=15
+batch_size = 128
 
-model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1kernel)+'_Epochs' + str(n_epochs)
+model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1kernel)+'_Epochs' + str(n_epochs)+ '_Dropout_' + str(dropout)
 #figure_format='svg'
 figure_format='png'
 figure_path='./'
@@ -201,21 +204,24 @@ model = Sequential()
 # convolutional layer
 cnn1 = Conv2D(n_cnn1planes, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu', input_shape=(28,28,1))
 model.add(cnn1)
+cnn11 = Conv2D(n_cnn1planes, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
+model.add(cnn11)
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 cnn2 = Conv2D(n_cnn1planes*2, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
+cnn22 = Conv2D(n_cnn1planes*2, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 model.add(cnn2)
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 cnn3 = Conv2D(n_cnn1planes*4, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 model.add(cnn3)
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 # flatten output of conv
 model.add(Flatten())
@@ -235,7 +241,7 @@ model.add(Dense(n_classes, activation='softmax'))
 #learning_rate = 0.009
 
 #model_name += '_Optimzer_SGD_LR_' + str(learning_rate)
-model_name += '_Optimzer_SGD'
+#model_name += '_Optimzer_SGD'
 
 # Update figure_path to point to this new folder
 
@@ -243,16 +249,22 @@ model_name += '_Optimzer_SGD'
 # OR use a learning rate scheduler that adapts the learning rate over the epochs of the training process
 # https://keras.io/2.15/api/optimizers/learning_rate_schedules/
 
-#model_name += '_LearningRate_' + 'ExponentialDecay'
-initial_lr = 0.1
-model_name += '_Optimizer_SGD_ExpDecay_InitLR_' + str(initial_lr)
-learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
 
-#learning_rate=0.01
-#momentum = 0.9
-#optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
-optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
+steps_per_epoch = len(X_train) // batch_size
+total_decay_steps = n_epochs * steps_per_epoch
+#model_name += '_LearningRate_' + 'ExponentialDecay'
+#initial_lr = 0.07
+#learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
+
+learning_rate=0.008
+momentum = 0.9
+
+optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
+#optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
 #optimizer=Adam(learning_rate = learning_rate)
+
+#model_name += '_Optimizer_SGD_ExpDecay_InitLR_' + str(initial_lr)
+model_name += '_Optimizer_SGD_Momentum_' + str(momentum) + '_CosDecay_'
 
 # vary the constant learning rate
 #learning_rate = 0.01
