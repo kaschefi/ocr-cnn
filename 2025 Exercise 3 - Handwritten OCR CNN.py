@@ -253,18 +253,27 @@ model.add(Dense(n_classes, activation='softmax'))
 steps_per_epoch = len(X_train) // batch_size
 total_decay_steps = n_epochs * steps_per_epoch
 #model_name += '_LearningRate_' + 'ExponentialDecay'
-#initial_lr = 0.07
+initial_lr = 0.1
 #learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
+#learning_rate=0.008
+#momentum = 0.9
+learning_rate = CosineDecay(
+    initial_learning_rate=initial_lr,
+    decay_steps=total_decay_steps
+)
 
-learning_rate=0.008
-momentum = 0.9
 
-optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
-#optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
+#optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
+optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
 #optimizer=Adam(learning_rate = learning_rate)
 
+# 2. Define Schedule
+
+
+
+model_name += f"T3_Cosine_Init{initial_lr}"
 #model_name += '_Optimizer_SGD_ExpDecay_InitLR_' + str(initial_lr)
-model_name += '_Optimizer_SGD_Momentum_' + str(momentum) + '_CosDecay_'
+#model_name += '_Optimizer_SGD_Momentum_' + str(momentum) + '_CosDecay_'
 
 # vary the constant learning rate
 #learning_rate = 0.01
