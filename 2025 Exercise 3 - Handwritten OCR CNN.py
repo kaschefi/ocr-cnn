@@ -1,4 +1,6 @@
-# keras imports for the dataset and building our neural network
+# ==============================================================================
+# SECTION 1: IMPORTS & SETUP
+# ==============================================================================
 from keras.datasets import mnist
 from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Conv2D, MaxPool2D, Flatten, BatchNormalization
@@ -17,6 +19,12 @@ import matplotlib
 from datetime import datetime
 import numpy as np
 import os
+
+# ==============================================================================
+# SECTION 2: VISUALIZATION HELPER FUNCTIONS
+# Custom functions to save and display metrics, confusion matrices,
+# layer activations (feature maps), weights, and loss history.
+# ==============================================================================
 
 def display_classification_report(classification_report, figure_path, figure_name, onscreen=True):
     f = open(os.path.join(figure_path, figure_name+'.txt'), 'w', encoding='utf-8')
@@ -81,8 +89,6 @@ def display_activations(input, label, activations, layer_names, figure_path, fig
     else:
        plt.close(fig)
 
-
-
 def display_weights_column(weights, layer_names,figure_path,figure_name,figure_format,onscreen=True):
     n_layers_with_weights = 0
     for layer_index in range(0, len(weights)):
@@ -130,7 +136,6 @@ def display_weights_column(weights, layer_names,figure_path,figure_name,figure_f
     else:
        plt.close(fig)
 
-
 def display_loss_function(history,figure_path,figure_name,figure_format,onscreen=True):
     loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -153,6 +158,12 @@ def display_loss_function(history,figure_path,figure_name,figure_format,onscreen
     else:
        plt.close(fig)
 
+# ==============================================================================
+# SECTION 3: DATA LOADING & PREPROCESSING
+# Loading MNIST, reshaping dimensions for CNN input, normalizing pixel values,
+# and One-Hot encoding the target labels.
+# ==============================================================================
+
 # loading the dataset
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
@@ -167,7 +178,7 @@ print("y_train shape", y_train.shape)
 print("X_test shape", X_test.shape)
 print("y_test shape", y_test.shape)
 
-# normalizing the data 
+# normalizing the data
 X_train /= 255
 X_test /= 255
 
@@ -177,13 +188,20 @@ print("Shape before one-hot encoding: ", y_train.shape)
 Y_train = to_categorical(y_train, n_classes)
 Y_test = to_categorical(y_test, n_classes)
 print("Shape after one-hot encoding: ", Y_train.shape)
+
+# ==============================================================================
+# SECTION 4: HYPERPARAMETER CONFIGURATION
+# Setting variables for architecture size, batch size, epochs, and file paths.
+# Note: You can change model names and figure formats here.
+# ==============================================================================
+
 n_cnn1planes = 15
 n_cnn1kernel = 3
 n_poolsize = 1
 
 
-# Stride defines the step size at which the filter moves across the input during convolution. 
-# A larger stride results in a reduction of the spatial dimensions of the output feature map. 
+# Stride defines the step size at which the filter moves across the input during convolution.
+# A larger stride results in a reduction of the spatial dimensions of the output feature map.
 # Stride can be adjusted to control the level of downsampling in the network.
 # Stride is a critical parameter for controlling the spatial resolution of the feature maps and influencing the receptive field of the network.
 n_strides = 1
@@ -198,6 +216,12 @@ model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1ker
 figure_format='png'
 figure_path='./'
 log_path='./log'
+
+# ==============================================================================
+# SECTION 5: MODEL ARCHITECTURE DEFINITION
+# Building the Sequential CNN model: Conv layers, Pooling, Dropout, and Dense layers.
+# Note: There are commented out lines here for additional Conv layers or Dropout.
+# ==============================================================================
 
 # building a linear stack of layers with the sequential model
 model = Sequential()
@@ -250,6 +274,11 @@ model.add(Dense(n_classes, activation='softmax'))
 # OR use a learning rate scheduler that adapts the learning rate over the epochs of the training process
 # https://keras.io/2.15/api/optimizers/learning_rate_schedules/
 
+# ==============================================================================
+# SECTION 6: OPTIMIZER & COMPILATION
+# Defining Learning Rate Schedules (Step, Cosine, Exponential) and compiling.
+# Note: This section contains many commented options to switch optimizers/schedulers.
+# ==============================================================================
 
 steps_per_epoch = len(X_train) // batch_size
 total_decay_steps = n_epochs * steps_per_epoch
@@ -290,11 +319,21 @@ if not os.path.exists(model_name):
 figure_path = model_name
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
+# ==============================================================================
+# SECTION 7: PRE-TRAINING VISUALIZATION
+# Capturing the initial random weights before training starts.
+# ==============================================================================
+
 layer_names = [layer.name for layer in model.layers[:8]]
 
 weights = [layer.get_weights() for layer in model.layers[:4]]
 figure_name=model_name + '_initial_weights'
 display_weights_column(weights, layer_names, figure_path, figure_name, figure_format, False )
+
+# ==============================================================================
+# SECTION 8: TRAINING
+# Fitting the model to the training data.
+# ==============================================================================
 
 # training the model for n_epochs, use 10% of the training data as validation data
 history = model.fit(X_train, Y_train, validation_split = 0.1, batch_size=128, epochs=n_epochs )
@@ -302,8 +341,14 @@ history = model.fit(X_train, Y_train, validation_split = 0.1, batch_size=128, ep
 figure_name=model_name + '_loss'
 display_loss_function(history,figure_path,figure_name,figure_format)
 
+# ==============================================================================
+# SECTION 9: POST-TRAINING VISUALIZATION & ANALYSIS
+# Visualizing learned weights, test image activations, confusion matrix,
+# and saving model summary.
+# ==============================================================================
+
 weights = [layer.get_weights() for layer in model.layers[:4]]
-figure_name=model_name + '_weights' 
+figure_name=model_name + '_weights'
 display_weights_column(weights, layer_names, figure_path, figure_name, figure_format, False )
 
 X_test_images = X_test[:2]
@@ -330,8 +375,3 @@ stringlist = []
 model.summary(print_fn=lambda x: stringlist.append(x))
 model_summary = "\n".join(stringlist)
 display_classification_report(model_summary, figure_path, figure_name)
-
-
-
-
-
