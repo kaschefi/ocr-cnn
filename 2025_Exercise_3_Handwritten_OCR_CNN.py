@@ -205,10 +205,10 @@ n_poolsize = 1
 # Stride can be adjusted to control the level of downsampling in the network.
 # Stride is a critical parameter for controlling the spatial resolution of the feature maps and influencing the receptive field of the network.
 n_strides = 1
-n_dense = 100
-dropout = 0.4
+n_dense = 128
+dropout = 0.5
 
-n_epochs=15
+n_epochs=20
 batch_size = 128
 
 model_name = 'CNN_Handwritten_OCR_CNN'+str(n_cnn1planes)+'_KERNEL'+str(n_cnn1kernel)+'_Epochs' + str(n_epochs)+ '_Dropout_' + str(dropout)
@@ -230,23 +230,28 @@ cnn1 = Conv2D(n_cnn1planes, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_
 model.add(cnn1)
 #cnn11 = Conv2D(n_cnn1planes, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 #model.add(cnn11)
+model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 cnn2 = Conv2D(n_cnn1planes*2, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 model.add(cnn2)
 #cnn22 = Conv2D(n_cnn1planes*2, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 #model.add(cnn22)
+model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 cnn3 = Conv2D(n_cnn1planes*4, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
 model.add(cnn3)
+cnn33 = Conv2D(n_cnn1planes*4, kernel_size=(n_cnn1kernel,n_cnn1kernel), strides=(n_strides,n_strides), padding='valid', activation='relu')
+model.add(cnn33)
+model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(n_poolsize,n_poolsize)))
 
-#model.add(Dropout(dropout))
+model.add(Dropout(dropout))
 
 # flatten output of conv
 model.add(Flatten())
@@ -256,6 +261,7 @@ model.add(Dropout(dropout))
 
 # hidden layer
 model.add(Dense(n_dense, activation='relu'))
+model.add(BatchNormalization())
 # output layer
 model.add(Dense(n_classes, activation='softmax'))
 
@@ -287,19 +293,19 @@ boundaries = [5 * steps_per_epoch, 10 * steps_per_epoch] # Drop after Epoch 5 an
 initial_lr = 0.1
 values = [initial_lr, initial_lr * 0.1, initial_lr * 0.01]
 #learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
-#learning_rate=0.008
-#momentum = 0.9
+learning_rate=0.008
+momentum = 0.9
 #learning_rate = CosineDecay(
 #    initial_learning_rate=initial_lr,
 #    decay_steps=total_decay_steps
 #)
-learning_rate = PiecewiseConstantDecay(
-    boundaries=boundaries,
-    values=values
-)
+#learning_rate = PiecewiseConstantDecay(
+#    boundaries=boundaries,
+#    values=values
+#)
 
-#optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
-optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
+optimizer=SGD(learning_rate = learning_rate, momentum = momentum)
+#optimizer = SGD(learning_rate=learning_rate, momentum=0.0)
 #optimizer=Adam(learning_rate = learning_rate)
 
 # 2. Define Schedule
