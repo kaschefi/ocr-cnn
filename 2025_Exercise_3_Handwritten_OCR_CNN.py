@@ -206,7 +206,7 @@ n_poolsize = 1
 # Stride is a critical parameter for controlling the spatial resolution of the feature maps and influencing the receptive field of the network.
 n_strides = 1
 n_dense = 128
-dropout = 0.5
+dropout = 0.4
 
 n_epochs=20
 batch_size = 128
@@ -293,12 +293,12 @@ boundaries = [5 * steps_per_epoch, 10 * steps_per_epoch] # Drop after Epoch 5 an
 initial_lr = 0.1
 values = [initial_lr, initial_lr * 0.1, initial_lr * 0.01]
 #learning_rate = ExponentialDecay(initial_learning_rate=initial_lr, decay_steps=n_epochs, decay_rate=0.9)
-learning_rate=0.008
+#learning_rate=0.008
 momentum = 0.9
-#learning_rate = CosineDecay(
-#    initial_learning_rate=initial_lr,
-#    decay_steps=total_decay_steps
-#)
+learning_rate = CosineDecay(
+    initial_learning_rate=initial_lr,
+    decay_steps=total_decay_steps
+)
 #learning_rate = PiecewiseConstantDecay(
 #    boundaries=boundaries,
 #    values=values
